@@ -1,0 +1,1436 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <meta name="viewport" content="width=1024, initial-scale=1">
+  <title>Ishikawa</title>
+  <style>
+    :root {
+      --muted: #f1f1f1;
+      --accent: #c8c8c8;
+      --dark: #333;
+      --border: #bdbdbd;
+      --blue: #0f62fe;
+    }
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      margin: 2px;
+      background: #fff;
+      color: var(--dark);
+    }
+    .container {
+      max-width: 1200px;
+      min-width: 1140px; /* Garante que o container se adapte ao tamanho mínimo do conteúdo */
+      margin: 4px auto; /* Centraliza o container na tela */
+      box-sizing: border-box;
+      border: 2px solid var(--border);
+    }
+    /* Top verification area */
+    .top-tables {
+      display: flex;
+      gap: 8px;
+    }
+    .verify {
+      flex: 1;
+      border: 1px solid var(--border);
+      padding: 8px;
+      background: linear-gradient(#fff, #fafafa);
+    }
+    .verify h4 {
+      margin: 2px 0 4px;
+      font-size: 13px;
+      text-align: center;
+    }
+    .verify table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .verify td {
+      border: 1px solid var(--border);
+      padding: 6px;
+    }
+    /* title middle */
+    .case-title {
+      margin: 8px 0;
+      padding: 14px;
+      border: 1px solid var(--border);
+      text-align: center;
+      font-weight: 700;
+      background: linear-gradient(#eee, #bbb);
+    }
+    /* collaborator and right info */
+    .row {
+      display: flex;
+      gap: 10px;
+    }
+    .left {
+      flex: 1;
+    }
+    .right {
+      width: 360px;
+      border: 1px solid var(--border);
+      padding: 8px;
+    }
+    .right .field {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 4px;
+      border-bottom: 1px dotted var(--border);
+      font-size: 13px;
+    }
+    .right .field:last-child {
+      border-bottom: none;
+    }
+    /* Fishbone area */
+    .fishbone {
+      margin-top: 8px;
+      display: grid;
+      grid-template-columns: 250px 250px 250px;
+      gap: 12px;
+      align-items: start;
+    }
+    .column {
+      background: transparent;
+    }
+    .box {
+      border: 1px solid var(--border);
+      padding: 10px;
+      min-height: 60px;
+      background: linear-gradient(#ffffff, #f9f9f9);
+    }
+    .gray {
+      background: var(--accent);
+      padding: 18px;
+      color: #222;
+      text-align: center;
+      font-weight: 600;
+    }
+    .big-right {
+      border: 1px solid var(--border);
+      background: linear-gradient(#ddd, #888);
+      min-height: 240px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: 600;
+    }
+    .label {
+      text-align: center;
+      margin-bottom: 10px;
+      font-weight: 700;
+      color: #555;
+    }
+    .small {
+      contenteditable="true";
+      font-size: 13px;
+      color: #444;
+    }
+    /* footer with measure boxes */
+    .foot-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 10px;
+    }
+    .foot {
+      flex: 1;
+    }
+    .foot .box {
+      min-height: 80px;
+    }
+    .container2 {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    .hexagon {
+      width: 25px;
+      height: 20px;
+      background-color: transparent;
+      background-image: url("data:image/svg+xml,%3Csvg width='25' height='20' viewBox='0 0 25 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M6.25 0L18.75 0L25 10L18.75 20L6.25 20L0 10L6.25 0Z' fill='%23004466'/%3E%3C/svg%3E");
+      background-size: contain;
+      -webkit-background-size: contain;
+      background-repeat: no-repeat;
+      position: relative;
+    }
+    .line {
+      width: 200px;
+      height: 6px;
+      background-color: #004466;
+      position: relative;
+    }
+    .arrow {
+      position: absolute;
+      top: -6px;
+      right: -3px;
+      width: 6;
+      height: 6;
+      border-top: 10px solid transparent;
+      border-bottom: 10px solid transparent;
+      border-left: 10px solid #004466;
+    }
+    .button-container {
+      margin-top: 20px;
+      text-align: right;
+    }
+    /* CSS para o novo combo-box */
+    .custom-combobox {
+      position: relative;
+      display: inline-block;
+    }
+    .custom-combobox-input {
+      min-width: 160px;
+      border: none;
+      outline: none;
+      font-family: inherit;
+      background: transparent;
+    }
+    .custom-combobox-list {
+      position: absolute;
+      border: 1px solid #ccc;
+      background-color: white;
+      max-height: 200px;
+      overflow-y: auto;
+      width: 100%;
+      z-index: 100;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: none;
+    }
+    .custom-combobox-list li {
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .custom-combobox-list li:hover,
+    .custom-combobox-list li.highlighted {
+      background-color: #f0f0f0;
+    }
+    /* Estilo para alinhar os botões */
+    .button-container {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    .button-container button {
+        padding: 8px 12px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    .colaborador-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    /* Novo estilo para o container de matrículas */
+    #matriculaContainer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+    .matricula-entry {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      border: 1px solid var(--border);
+      padding: 4px;
+    }
+    /* ===== Seleção de causas por M (Ishikawa) ===== */
+    .m-select {
+      position: relative;
+    }
+    .m-placeholder {
+      color: #999;
+      font-style: italic;
+    }
+    .m-ui .m-trigger {
+      margin-top: 4px;
+      width: 100%;
+      padding: 5px 8px;
+      font-size: 12px;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: linear-gradient(#eef6ff, #d7ecff);
+      color: #0f3d66;
+      font-weight: 600;
+    }
+    .m-ui .m-trigger:hover {
+      background: linear-gradient(#e0f0ff, #c3e2ff);
+    }
+    .m-dropdown {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 100%;
+      z-index: 500;
+      background: #fff;
+      border: 1px solid #9db4c7;
+      border-radius: 4px;
+      box-shadow: 0 6px 18px rgba(0,0,0,.18);
+      padding: 6px;
+      margin-top: 2px;
+    }
+    .m-dropdown .m-filter {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 5px 7px;
+      font-size: 12px;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      margin-bottom: 4px;
+    }
+    .m-dropdown .m-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      max-height: 190px;
+      overflow-y: auto;
+    }
+    .m-dropdown .m-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      padding: 4px 5px;
+      font-size: 12px;
+      cursor: pointer;
+      border-radius: 3px;
+    }
+    .m-dropdown .m-list li:hover {
+      background: #eef6ff;
+    }
+    .m-dropdown .m-list li input {
+      margin-top: 2px;
+      cursor: pointer;
+    }
+    .m-dropdown .m-list li.m-hidden {
+      display: none;
+    }
+    .m-custom {
+      display: flex;
+      gap: 4px;
+      margin-top: 6px;
+      border-top: 1px solid #e2e2e2;
+      padding-top: 6px;
+    }
+    .m-custom .m-custom-input {
+      flex: 1;
+      min-width: 0;
+      padding: 5px 7px;
+      font-size: 12px;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+    }
+    .m-custom .m-custom-add {
+      padding: 5px 8px;
+      font-size: 12px;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      background: #f1f1f1;
+    }
+    .m-dropdown .m-actions {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 6px;
+    }
+    .m-dropdown .m-actions button {
+      font-size: 11px;
+      padding: 4px 8px;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      background: #fafafa;
+    }
+    /* Durante captura/salvamento, esconder controles de seleção */
+    body.capturing .m-ui,
+    body.capturing .m-placeholder {
+      display: none !important;
+    }
+    /* Botão salvar + barra de status do histórico */
+    #saveDataButton {
+      background-color: #2e7d32 !important;
+      color: #fff;
+      font-weight: 600;
+    }
+    #saveDataButton:hover { background-color: #256628 !important; }
+    .save-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 6px;
+      font-size: 12px;
+      color: #555;
+    }
+    .save-toolbar .link-btn {
+      background: none;
+      border: none;
+      color: #0f62fe;
+      cursor: pointer;
+      font-size: 12px;
+      text-decoration: underline;
+      padding: 0;
+    }
+    .save-toolbar .link-btn.danger { color: #b00020; }
+    .save-toolbar #recCount { font-weight: 700; color: #2e7d32; }
+    .save-toolbar #syncStatus { font-weight: 600; }
+    .save-toolbar #syncStatus.ok { color: #2e7d32; }
+    .save-toolbar #syncStatus.pending { color: #b8860b; }
+    .save-toolbar #syncStatus.off { color: #999; }
+  </style>
+ <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+ <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <div class="top-tables">
+      <div class="verify">
+        <h4> ITENS PARA SEREM VERIFICADOS </h4>
+        <table>
+          <tbody>
+            <tr>
+              <td>1 - Estou com todos os EPI's necessários para esta atividade?</td>
+              <td>SÍM <input type="radio" name="check1" checked="" wfd-id="id0"></td>
+              <td>NÃO <input type="radio" name="check1" wfd-id="id1"></td>
+              <td>N/A <input type="radio" name="check1" wfd-id="id2"></td>
+            </tr>
+            <tr>
+              <td>2 - O local está isolado/sinalizado?</td>
+              <td>SÍM <input type="radio" name="check2" checked="" wfd-id="id3"></td>
+              <td>NÃO <input type="radio" name="check2" wfd-id="id4"></td>
+              <td>N/A <input type="radio" name="check2" wfd-id="id5"></td>
+            </tr>
+            <tr>
+              <td>3 - O equipamento foi bloqueado?</td>
+              <td>SÍM <input type="radio" name="check3" checked="" wfd-id="id6"></td>
+              <td>NÃO <input type="radio" name="check3" wfd-id="id7"></td>
+              <td>N/A <input type="radio" name="check3" wfd-id="id8"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="verify">
+        <h4> ITENS PARA SEREM VERIFICADOS </h4>
+        <table>
+          <tbody>
+            <tr>
+              <td>4 - As ferramentas estão em boas condições e possuo recurso necessário?</td>
+              <td>SÍM <input type="radio" name="check4" checked="" wfd-id="id9"></td>
+              <td>NÃO <input type="radio" name="check4" wfd-id="id10"></td>
+              <td>N/A <input type="radio" name="check4" wfd-id="id11"></td>
+            </tr>
+            <tr>
+              <td>5 - Estou habilitado e capacitado ao serviço?</td>
+              <td>SÍM <input type="radio" name="check5" checked="" wfd-id="id12"></td>
+              <td>NÃO <input type="radio" name="check5" wfd-id="id13"></td>
+              <td>N/A <input type="radio" name="check5" wfd-id="id14"></td>
+            </tr>
+            <tr>
+              <td>6 - Estou me sentindo bem para executar esta atividade?</td>
+              <td>SÍM <input type="radio" name="check6" checked="" wfd-id="id15"></td>
+              <td>NÃO <input type="radio" name="check6" wfd-id="id16"></td>
+              <td>N/A <input type="radio" name="check6" wfd-id="id17"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="case-title" contenteditable="true" spellcheck="false" style="text-transform: uppercase;"></div>
+    <div class="row">
+      <div class="left" style="margin-left: 12px">
+        <div style="padding:4px; background:linear-gradient(#c9c9c9,#ccc);">
+          <div class="colaborador-container">
+            <div>
+              <strong><span contenteditable="false">Colaborador:</span></strong>
+              <span id="colaboradoresDisplay"></span>
+            </div>
+            <div class="button-container-small">
+              <button id="addColaborador" disabled="true">+</button>
+              <button id="removeColaborador" disabled="true">-</button>
+            </div>
+          </div>
+        </div>
+        <div class="fishbone">
+          <div class="column">
+            <div class="label gray">Material</div>
+            <div class="m-select">
+              <div class="box small m-box" id="box-material" contenteditable="true"></div>
+              <div class="m-ui"><button type="button" class="m-trigger" data-m="material">＋ Selecionar causas</button></div>
+            </div>
+            <div style="height:18px"></div>
+          </div>
+          <div class="column">
+            <div class="label gray">Método</div>
+            <div class="m-select">
+              <div class="box small m-box" id="box-metodo" contenteditable="true"></div>
+              <div class="m-ui"><button type="button" class="m-trigger" data-m="metodo">＋ Selecionar causas</button></div>
+            </div>
+            <div style="height:18px"></div>
+          </div>
+          <div class="column">
+            <div class="label gray">Máquina</div>
+            <div class="m-select">
+              <div class="box small m-box" id="box-maquina" contenteditable="true"></div>
+              <div class="m-ui"><button type="button" class="m-trigger" data-m="maquina">＋ Selecionar causas</button></div>
+            </div>
+            <div style="height:18px"></div>
+          </div>
+        </div>
+        <div class="container2">
+          <div class="hexagon" style="margin-left:100px"></div>
+          <div class="line">
+            <div class="arrow"></div>
+          </div>
+          <div class="hexagon"></div>
+          <div class="line">
+            <div class="arrow"></div>
+          </div>
+          <div class="hexagon"></div>
+        </div>
+        <div style="height:10px"></div>
+        <div class="fishbone">
+          <div class="column">
+            <div class="m-select">
+              <div class="box small m-box" id="box-medicao" contenteditable="true"></div>
+              <div class="m-ui"><button type="button" class="m-trigger" data-m="medicao">＋ Selecionar causas</button></div>
+            </div>
+            <div class="label gray" style="margin-top: 10px">Medida</div>
+          </div>
+          <div class="column">
+            <div class="m-select">
+              <div class="box small m-box" id="box-mao_obra" contenteditable="true"></div>
+              <div class="m-ui"><button type="button" class="m-trigger" data-m="mao_obra">＋ Selecionar causas</button></div>
+            </div>
+            <div class="label gray" style="margin-top: 10px">Mão de Obra</div>
+          </div>
+          <div class="column">
+            <div class="m-select">
+              <div class="box small m-box" id="box-meio_ambiente" contenteditable="true"></div>
+              <div class="m-ui"><button type="button" class="m-trigger" data-m="meio_ambiente">＋ Selecionar causas</button></div>
+            </div>
+            <div class="label gray" style="margin-top: 10px">Meio Ambiente</div>
+          </div>
+        </div>
+      </div>
+      <div class="right">
+        <div class="field">
+          <div>Chapa:</div>
+		      <div id="matriculaContainer" style="display: flex; flex-wrap: wrap; gap: 5px; align-items: center;">
+            <div id="matricula-entry-1" class="matricula-entry">
+              <span id="matricula1"></span>
+              <div id="meuDiv" contenteditable="true" style="position: relative;">
+                <input id="matriculaInput" class="custom-combobox-input" type="text" placeholder="Digite ou clique para buscar" style="min-width:160px; border:none; outline:none; font-family:inherit;" wfd-id="id18">
+                <ul id="matriculaList" class="custom-combobox-list" style="display: none;"></ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="field" spellcheck="false">
+          <div>Equipamento:</div>
+          <div id="meuDiv1" contenteditable="true"></div>
+        </div>
+        <div class="field">
+          <div>Inventário SAP:</div>
+          <div id="meuDiv2" contenteditable="true" style="position: relative;">
+            <input id="inventarioInput" class="custom-combobox-input" type="text" placeholder="Digite ou clique para buscar" style="min-width:160px; border:none; outline:none; font-family:inherit;" wfd-id="id19">
+            <ul id="inventarioList" class="custom-combobox-list" style="display: none;"></ul>
+          </div>
+        </div>
+        <div class="field">
+          <div>Ordem PM:</div>
+          <div id="meuDiv3" contenteditable="true"></div>
+        </div>
+        <div class="field">
+          <div>Data:</div>
+          <div id="data-atual"></div>
+          <script>
+            document.getElementById("meuDiv1").addEventListener("keydown", function(event) {
+              if (event.key === "Enter") {
+                event.preventDefault();
+              }
+            });
+          </script>
+          <script>
+            document.getElementById("meuDiv2").addEventListener("keydown", function(event) {
+              if (event.key === "Enter") {
+                event.preventDefault();
+              }
+            });
+          </script>
+          <script>
+            document.getElementById("meuDiv3").addEventListener("keydown", function(event) {
+              if (event.key === "Enter") {
+                event.preventDefault();
+              }
+            });
+          </script>
+          <script>
+            function atualizarData() {
+              const agora = new Date();
+              const dia = String(agora.getDate()).padStart(2, '0');
+              const mes = String(agora.getMonth() + 1).padStart(2, '0');
+              const ano = agora.getFullYear();
+              const dataFormatada = `${dia}/${mes}/${ano}`;
+              document.getElementById("data-atual").textContent = dataFormatada;
+            }
+            atualizarData();
+            document.getElementById("meuDiv").addEventListener("click", function() {
+              atualizarData();
+            });
+            document.getElementById("meuDiv3").addEventListener("click", function() {
+              atualizarData();
+            });
+          </script>
+        </div>
+        <div style="margin-top:10px" class="big-right" contenteditable="true">Software NC</div>
+        <div class="button-container">
+          <button id="captureButton" onclick="captureImage()" style="background-color: #4ca3e1bd;">Capturar Imagem</button>
+          <button id="nextShiftButton" onclick="handleButtonClick()" style="background-color: #4ca3e1bd;">Próximo Turno</button>
+          <button id="saveDataButton" onclick="salvarEmPlanilha()">💾 Salvar em Planilha</button>
+        </div>
+        <div class="save-toolbar m-ui">
+          <span><span id="recCount">0</span> registro(s) no histórico deste dispositivo</span>
+          <span id="syncStatus">•</span>
+          <button type="button" class="link-btn" id="syncNowBtn" onclick="sincronizarPendentes()">🔄 Sincronizar pendências</button>
+          <button type="button" class="link-btn" onclick="exportarPlanilha(false)">Exportar sem salvar</button>
+          <button type="button" class="link-btn danger" onclick="limparHistorico()">Limpar histórico</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    function captureImage() {
+      const meuDiv1Content = document.getElementById('meuDiv1').textContent.trim();
+      const meuDiv3Content = document.getElementById('meuDiv3').textContent.trim();
+      
+      const buttonContainer = document.querySelector('.button-container');
+      const originalDisplay = buttonContainer.style.display;
+      buttonContainer.style.display = 'none';
+
+      // Esconde os controles de seleção de causas durante a captura
+      document.body.classList.add('capturing');
+      document.querySelectorAll('.m-dropdown').forEach(dd => dd.style.display = 'none');
+
+      html2canvas(document.body, {
+        allowTaint: true,
+        useCORS: true
+      }).then(canvas => {
+        document.body.classList.remove('capturing');
+        const link = document.createElement('a');
+        link.download = `Ishikawa ${meuDiv1Content} - ${meuDiv3Content}.jpeg`;
+        link.href = canvas.toDataURL('image/jpeg');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        buttonContainer.style.display = originalDisplay;
+      });
+    }
+
+    function handleButtonClick() {
+      saveHtmlFile();
+      sendEmail();
+    }
+    function saveHtmlFile() {
+      const meuDiv1Content = document.getElementById('meuDiv1').textContent.trim().replace(/\s/g, '_');
+      const meuDiv3Content = document.getElementById('meuDiv3').textContent.trim().replace(/\s/g, '_');
+      const filename = `${meuDiv1Content}_${meuDiv3Content}.html`;
+      
+      const docClone = document.documentElement.cloneNode(true);
+
+      // Garante que o arquivo salvo não fique com controles escondidos nem dropdown aberto
+      docClone.querySelector('body')?.classList.remove('capturing');
+      docClone.querySelectorAll('.m-dropdown').forEach(dd => dd.style.display = 'none');
+
+      // Salvar o estado dos radio buttons
+      const radioButtonsOriginal = document.querySelectorAll('input[type="radio"]');
+      const radioButtonsClone = docClone.querySelectorAll('input[type="radio"]');
+      
+      radioButtonsOriginal.forEach((radio, index) => {
+        if (radio.checked) {
+          radioButtonsClone[index].setAttribute('checked', 'checked');
+        } else {
+          radioButtonsClone[index].removeAttribute('checked');
+        }
+      });
+      
+      const content = docClone.outerHTML;
+      const blob = new Blob([content], {
+        type: 'text/html'
+      });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+    function sendEmail() {
+      const meuDiv1Content = document.getElementById('meuDiv1').textContent.trim();
+      const meuDiv3Content = document.getElementById('meuDiv3').textContent.trim();
+      const subject = `${meuDiv1Content} - ${meuDiv3Content}`;
+      const body = `Bom dia! Favor dar continuidade na ordem ${meuDiv3Content} do equipamento ${meuDiv1Content}. Obrigado!`;
+      const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      window.location.href = mailtoLink;
+    }
+  </script>
+  <script>
+    (function() {
+      // Funções de detecção de dispositivo e ocultação do botão de captura
+      const isiPad = /iPad/i.test(navigator.userAgent);
+      const captureButton = document.getElementById('captureButton');
+
+      if (isiPad) {
+        console.log('Acessando de um iPad. Ocultando o botão de captura de imagem.');
+        if (captureButton) {
+          captureButton.style.display = 'none';
+        }
+      } else {
+        console.log('Acessando de um desktop/laptop.');
+      }
+
+      const s1 = '37000992|37001100|37001703|37001775|37001820|37001899|37001913|37002077|37002249|37002561|37002824|37002963|37002988|37003176|37003586|37003700|37003980|37004035|37004117|37004337|37004339|37004415|37004497|37004586|37004597|37004615|37004640|37004681|37004745|37004821|37005056|37005209|37005281|37005446|37005504|37005688|37005717|37005720|37006001|37006002|37006363|37006733|37006779|37006845|37007161|37007217|37007364|37008273|37008497|37008500|37008503|37008506|37008713|37009009|37009051|37009146|37009149|37009161|37009162|37009237|37009313|37009473|37009719|37009778|37009781|37009805|37009806|37009807|37009846|37009874|37009912|37009972|37009973|37009979|37010003|37010046|37010198|37010377|37010432|37010433|37010483|37010545|37010653|37010668|37010760|37670603|37672122|37672154|37672277|37672356|37672383|37672393|37672487|37673041|37673057|37673132|37673307|37673446|37673481|37673492|37673873|37674053|37674091|37674159|37674191|37674499|37674517|37904674';
+      const s2 = 'Ralph de Souza|Mauricio Cardoso|Alexsandro Piaulino|Anderson Ricardo Ferriello|Marcelo Monteiro Brasil|Jose Alexandre Silva Filho|Sergio Ferrer Junior|Leandro Modesto|Job de Lima Ferreira|Diego Martines|Cleiton Wilson Zakorchini|Giliarde Roberto Meira|Jonatan Augusto Paula|Aline Perotti Silva|Glebson Francis Pacheco|Jaido Furtunato Pires|Nivaldo Pereira Silva|Christiano Mathias de Oliveira|Alex Sandro Nascimento|Wesley Cardoso Fernandes|Felipe Capellin Oliveira|Douglas Paiffer Pereira|Emerson Ribeiro|Gilmar Carvalho Oliveira|Rubens Alves de Lima|Sonderlei Vieira Ramos|Paulo Roberto N. Ribeiro|Vinicius de Domingos|Cezar Augusto Marques|Everton da Silva Cano|Isaias Paes Marcino|Marcelo de Oliveira Martins|Cladomiro Bonfim|Andres Felix Mescolatti|Evandro Goncalves Almeida|Daniel Augusto Ignacio|Denicarlos Modesto|Sandro Eduardo Ameri|Rodolfo Rodrigues Barreiros|Rogerio Alexandr Calefe|Rodrigo Simoes Fernandes|Ivan Luiz Rosa|Diogenes Aparec Patelli|Marcos Vinicius Costa|Daniel Ignacio Oliveira|Deivison Albuquerque Machado|Jefferson Matte Carriel|Divaldo Raymundo Dutra Junior|Felipe Correa Boaventura|Flavio Maia Gaudencio Lacerda|Guilherme Jose Vieira|Gustavo Henriqu Arantes|Luis Carlos de Oliveira Junior|Rodrigo Batista Lopes|Lucas Novais Nicacio|Gabriel Gustavo Moreira|Renan Gustavo Moreira Dutra|Juan Vieira Moreira|Christian Bomfim Branco|Patrick Gean Ru Lopes|Daniel Correia Santos|Alisson de Almeida|Gabriel Bitenco Ribeiro|Kelvin Santana Silva|Nycolas Gutierr Rodrigues|Mateus de Oliveira Fernandez|Marcelo Augusto Straioto|Luiz Eduardo Ch Santos|Renan Gomes de Andrade|Heitor Cambui Costa|Felipe Augusto Silva|Edson Luis de Oliveira|Joao Victor Oliveira Duarte|Fabiano de Lima Xavier|Washington Mess Silva|Jean Carlos Apa Oliveira|Thiago Henrique Luciano|David Carlos de Delmiro|Ricardo de Souza Lima|Fernando de Jesus Peressin|Emerson Leandro Souza|Ana Julia Dias Rodrigues|Bruno de Oliveira|Renilson dos Reis|Rafael Misutani Oliveira|Altair De Camargo|Antonio Wanderl Almeida|Aparecido Gonza Sanches|Ricardo Antonio Kobuszewski|Elson Jose Neiva Costa|Ricardo Barbosa Silva|Sergio Ferreira|Robson Favero|Renato Galhardo Vaz|Walter Sossai Junior|Elison Antonio Machado|Kelly Aparecida Moleiro|Paulo Gemeges Piatti|Arnaldo Cardoso|Ricardo Vicente Goes|Eduardo Sergio Vanzo|Roberto de Oliveira Lopes|Valdeir Jose de Souza|Fabio Soares Ricco|Kleber Adriano Gomes|Andre Luciano de Jesus|Lucas Cassiolato Oliveira|Nikolay Gabriel Queiroz';
+      const s3 = '12124176|12124178|12124184|12124185|12124196|12124199|12125301|12128905|12134052|12134053|12174076|12174076|12174085|12174274|12182690|12182732|12182736|12183670|12189021|12228439|12228442|12232322|12232684|12232701|12232743|12232811|12232856|12232859|12232870|12232879|12232919|12232922|12232945|12232998|12233055|12233110|12233142|12233192|12233205|12233210|12233216|12233606|12233612|12233621|12233656|12233665|12233675|12233770|12233797|12233812|12233828|12233838|12233842|12233846|12233853|12233858|12233861|12233861|12233868|12233872|12233876|12233878|12233886|12233892|12233900|12233901|12233903|12233911|12233922|12233925|12233945|12233961|12233963|12233986|12234002|12234003|12234012|12234017|12234022|12234084|12234088|12234093|12234230|12234235|12234238|12234257|12234297|12234304|12234306|12234310|12234312|12234319|12234347|12234362|12234366|12234372|12234376|12234377|12234383|12234391|12234392|12234393|12234406|12234416|12234429|12234459|12234569|12234619|12234621|12234623|12234625|12234626|12234644|12234664|12234676|12234677|12234678|12234681|12234708|12234710|12234853|12234901|12234967|12235231|12235255|12235316|12235322|12235323|12235326|12235328|12235362|12235372|12235402|12235404|12235442|12235513|12235516|12235520|12235522|12235533|12235549|12235592|12235612|12235651|12235676|12235683|12235765|12235780|12238003|12238015|12241830|12241835|12241878|12246032|12259194|12259195|12261324|12261324|12261325|12261466|12263914|12263978|12263980|12263981|12263982|12263983|12263984|12264295|12264296|12264297|12264298|12264792|12268696|12281470|12290849|12290860|12290960|12290963|12290964|12293743|12293745|12293746|12293747|12297503|12301891|12303149|12303150|12308844|12310098|12314006|12322086|12325297|12335600|12340428|12340507|12348195|12348220|12358997|12360422|12360939|12387288|12404951|12404958|12420922|12493979|12502500|12502502|12575230|12575512|12575513|12578355|12610287|12713159|85052714';
+      const s4 = 'MAS|MAS|MAS|MAS|MAS |MAS |MAS|MAS|MAS|MAS |MAS|MAS |MAS |MAS |MAQUINA DE LAVAR E OLEAR|PRENSA HIDRAULICA MARCA SILME 5 TONELADA|PRENSA HIDRAULICA MARCA SILME 5 TONELADA|MAQUINA DE LAVAR ISOPARAFINA OS 31787200|PGE 10/120|RETIFICA EXTERNA IRR2S-105-DAR 1|RETIFICA NOVAMATIC 4GP 75/225 - 4820|LAPIDADORA INA HOBEL|LAPIDADORA INA 2|LAPIDADORA SUPFINA|KM 85|LAVADORA NAUTILUS |RETIFICA DD 600 DISKUS|LAPIDADORA INA 2 DUPLA|LAPIDADORA INA 2|KM 85|MÁQUINA DE LAVAR ECOCLEAN|KM 85|INA 1|RETÍFICA SIBYLLE III CINCINNATI|KM 85|2GR|PGE 10/80|RETIFICA SR-5 HERMINGHAUSEN|PGE 10/120|PGE-U 10/120 CNC MCA|PGE 10/120|LAPIDADORA DUPLA INA EXTERNA P/ANEL C/SU|SISTEMA DE OLEAMENTO DE PEÇAS|CAMARA SUB-ZERO|UNIDADE DE OLEAMENTO|ENGRAXADEIRA|RTMPA (SLH)|LAVADORA DE PEÇAS RBF-3|ESTUFA KOES NR. 1|PGE 10/150 POOL|PRENSA RTPA DWS - 8805003|2 GR 10/65 F CNC 95|LAVADORA RBF-4 (M6)|MAQUINA DE ENCHER RSTO (SLH)|RETIFICA NOVAMATIC 2GR 10/65 F-CNC-95|RETIFICA INTERNA NOVAMATIC 2 GR 10/65 CN - (017)|2 GR 10/65 F CNC 95|MAS|RETIFICA DDS 600 CL DISKUS|2GR|RETIFICA INTERNA 2GR 10/65 F NOVAMATIC - (DESAT)|2GP|2GR|2 GSR 20/120 F CNC SL|MAQUINA ENCHER BUCHAS RSTO1|PGE 10/150|2GR|2 GR 10/65 F CNC 95|PGE 10/150|2GR|RETIFICA TWIN GRIP CNC SIBYLLE|RETIFICA NOVAMATIC 2GR10/65 ASEH - (019)|RETIFICA INTERNA MECCANICA NOVA 2 GR 10/ - (020)|FORNO DE CARBONITRETACAO SAFED T120/80 N|RETIFICA HORIZONTAL MARCA BSH MOD BRD60|RETIFICA MIKROSA KRONOS M CAP 81 A POT 8|TORNO MULTIUSO SCHUETTE AG-20|MAQUINA PARA ENCHER RSTO -  LINHA KIPM|PGE 10/120|ENGRAXADEIRA AUTOMATICA BALANCIM KIPH-ML|CLASSIFICADORA AUTOMATICA DE ROLOS LM6|RETIFICA NOVAMATIC 2 GR 10/65 CNC - (023)|2 GR 025 10/65 CNC|RETIFICA NOVAMATIC 2 GR 10/65 CNC - (026)|RETIFICA NOVAMATIC 2 GR 10/65 CNC - (027)|LAPIDADORA SUPERFICIE EXTERNA SUPFINA 47|PRENSA SAKAMURA|FURADEIRA AUTOMATICA LSA C/CONTROLADOR L|TAMBOR CENTRIFUGO ROSLER|TAMBOR CENTRIFUGO ROSLER II|TAMBOR CENTRIFUGO ROSLER|RETIFICA NOVAMATIC 2 GR 10/65 CNC - (030)|LAPIDADORA INA HOBEL |2 GR 10/65 F CNC C|2 GR 10/65 F CNC C|RETÍFICA KRONOS L-660 MIKROSA|LAVADORA DURR (MOLE)|LAVADORA DURR (DURA)|PRENSA LSA|RETIFICA MIKROSA KRONOS MX|RETIFICA MIKROSA KRONOS MX|RETÍFICA DE FACE DDS 600XL|RETIFICA NOVAMATIC 2 GR 10/65 CNC 95 - (033)|FORNO DE AUSTENITIZACAO I&A T160 SL 1106|CALIBRADORA AUTOMATICA GMN MARCA MBS SL|2 GSR 20/120 F CNC SL|2 GR 009 10/65 F CNC D|TORNO AUTOMATICO MULTIFUSO MARCA TAJMAC|RETIFICA INTERNA 2G JR 3/25 CNC-D SL 147|RETIFICA INTERNA 2G JR 3/25 CNC-D SL 147|RETIFICA INTERNA 2G JR 3/25 CNC-D SL 146|RETIFICA INTERNA 2G JR 3/25 CNC-D SL 146|SUFINA|KM 85|PGE 10/120 CNC MECANICA|2GSR|2GSR|TAMBOR CENTRIFUGO ROSLER III|LAPIDADORA INA HOBEL |LAVADORA NAUTILUS |INA 1|ESTEIRA TRANSPORTADORA DE PEÇAS|RETIFICA AFE 2S-88 - 2333|SUFINA|LAPIDADORA HMFL - 1172|LAPIDADORA INA 1|FORNO WIENSTROTH |MERCANADORA|RETIFICA DDS600XL DISKUS|2 GR 10/65 F CNC-D|RETIFICA DE PISTA MARCA FAG MODELO ARR1-|LAPIDADORA HM 4K-AR-HW - 2496|LAPIDADORA HONILAR FAG HM 2K - 2301|LAPIDADORA HM 2K - 2353|RETÍFICA DE FACE DDS 660 CNC 2472|GRAVADORA - 2547|LAPIDADORA HM 3K-AR - 2459|RETIFICA ARR 01-GB - 2507|RETIFICA MEG 150 S-UW-FR - 2591|LAPIDADORA FAG HM 150 SYSTEMS 2MK13011|RETIFICA MEG 150 S-UW-FR - 2198|RETÍFICA DISKUS WERKER DDS 660 6126|GRAVADORA - 2527|RETIFICA KRONOS L660 6160 ANO FABRICACA|RETIFICA KRONOS L 660 6161 ANO FABRICAÇA|RETÍFICA FACE BLUMBERG D660 2535|LAPIDADORA HM 2K - 2337|LAPIDADORA HM 2K - 2253|LAVADORA NAUTILUS |RETIFICA DE FACE DD 600 DISKUS|LAPIDADORA HORIZ.|RTMPA (SLH)|RETIFICA SR4H-47 HERMINGHAUSEN|MÁQUINA TRANSFERÊNCIA DE PEÇA|RETIFICA EXTERNA DE BORDA MODELO AFE 137|RETIFICA EXTERNA DE BORDA MODELO AFE 137|2GR|2 GR roxo 10/65 CNC 95|2GP|LAPIDADORA HM 150 SS 127442 PEDIDO 4SB00|VERIFICADORA DE AGULHA|MAQUINA DE LAVAR KFA - CELULA VOLVO I|ENGRAXADEIRA - CELULA VOLVO I|PRENSA HIDROPNEUMATICA ABS|PRENSA HIDROPNEUMATICA |PRENSA HIDROPNEUMATICA|PRENSA(4)HIDROPNEUMATICA|BALANÇA|MÁQUINA PRÉ-LAVAGEM|MÁQUINA PÓS-LAVAGEM|EVAPORADOR DE SAL|RETIFICA TWIN GRIP CNC SIBYLLE|BANCADA DE TRABALHO 17668|RETIFICA EXTERNA DE BORDA AFE 88|LASER |ESTACAO 1 LINHA VOLVO - LAVADORA|ESTACAO 3 E 4 LINHA VOLVO - PRENSA 3 P/I|ESTACAO 2 LINHA VOLVO - PRENSA 2 ENGRAXA|ESTACAO 5 LINHA VOLVO - PRENSA 5 - PRIS|MERCANADORA|RETIFICA INTERNA NOVAMATIC 4 GP 75/225 C|RETIFICA EXTERNA IRR2S-105-DAR 1|RETIFICA EXTERNA IRR2S-105-DAR 2|RETIFICA INTERNA INA MOD.ALS-1C CNC 1|RETIFICA INTERNA ARR01-CNC 1 - OS 327965|LAPIDADORA 2 GR 10/65 FM CNC SL 1887092|RETIFICA INTERNA 2 GR 10/65 CNC SL 18870|RETIFICA 2 GR 10 65 CNC-D SL 1887080 OS|RETIFICA INTERNA ARR01-CNC-DAR 3 - SL 18|MAS|2 GR 086 10/65 F CNC D|2GSR|PRENSA GAIOLAS METALICAS COM BANCADA OS|MAS |MAS |2GR|RETIFICA NOVAMATIC 2GR 10/65 CNC-D|LAVADORA FLEXLINK PARA A CELULA 2 - SS 2|FORNO IUA900|POLITRIZ NOVAMATIC 2GR 10/65 FM CNC-D|2 GSR 20/120 F CNC SL|PRENSA DAF 1|PRENSA DAF 2|GRAVADORA A LASER PARA LINHA SLH2|MAQUINA DE LAPIDAÇÃO VH90|MAQUINA DE MEDIÇAO DE RUIDO E ALTURA Q|MAQUINA DE LAVAR PROJETO I-012964-03 E S|GRAVADORA LASER TRUMPF TRUMARK 5020|KM 85|KM 85|MAQUINA DIMEC (SISTEMA DE INSPEÇAO)|GRAVADORA A LASER PARA CELULA 1 IR|GRAVADORA A LASER P/ LINHA DE MONTAGEM S|PRENSA SILME 6T';
+
+      // Dados para o campo de Chapa
+      const ids = s1.split('|');
+      const nomes = s2.split('|');
+      const matriculaInput = document.getElementById('matriculaInput');
+      const matriculaList = document.getElementById('matriculaList');
+      const colaboradoresDisplay = document.getElementById('colaboradoresDisplay');
+      const matriculaContainer = document.getElementById('matriculaContainer');
+      const meuDiv = document.getElementById('meuDiv');
+      const addColaboradorBtn = document.getElementById('addColaborador');
+      const removeColaboradorBtn = document.getElementById('removeColaborador');
+      
+      let matriculasAdicionadas = [];
+      let lastSelectedMatriculaElement = document.getElementById('matricula1');
+
+      // Funções para controle do estado dos botões e do campo de busca
+      function checkButtonsState() {
+        if (matriculasAdicionadas.length === 0) {
+          addColaboradorBtn.disabled = true;
+          removeColaboradorBtn.disabled = true;
+          meuDiv.style.display = 'block';
+        } else {
+          addColaboradorBtn.disabled = false;
+          removeColaboradorBtn.disabled = false;
+        }
+      }
+
+      function populateList(filter = '') {
+        matriculaList.innerHTML = '';
+        const filteredIds = ids.filter(id => id.includes(filter));
+        filteredIds.forEach(id => {
+          const li = document.createElement('li');
+          li.textContent = id;
+          li.setAttribute('data-index', ids.indexOf(id));
+          matriculaList.appendChild(li);
+        });
+        matriculaList.style.display = filteredIds.length > 0 ? 'block' : 'none';
+      }
+
+      function handleSelection(value) {
+        // Verifica se a matrícula já foi adicionada
+        const isDuplicate = matriculasAdicionadas.some(colab => colab.matricula === value);
+        if (isDuplicate) {
+          alert('Esta matrícula já foi adicionada.');
+          matriculaInput.value = '';
+          return;
+        }
+        
+        const index = ids.indexOf(value);
+        if (index !== -1) {
+          const nome = nomes[index];
+          
+          if (lastSelectedMatriculaElement) {
+            lastSelectedMatriculaElement.textContent = value;
+            matriculasAdicionadas.push({nome: nome, matricula: value});
+            
+            updateColaboradoresDisplay();
+
+            meuDiv.style.display = 'none';
+
+            checkButtonsState();
+          }
+        }
+        matriculaList.style.display = 'none';
+      }
+
+      function updateColaboradoresDisplay() {
+        let displayString = '';
+        matriculasAdicionadas.forEach(colaborador => {
+          displayString += `${colaborador.nome} / `;
+        });
+        colaboradoresDisplay.textContent = displayString;
+      }
+
+      // Eventos
+      meuDiv.addEventListener('click', () => {
+        populateList();
+        matriculaList.style.display = 'block';
+      });
+
+      matriculaInput.addEventListener('input', (event) => {
+        const filter = event.target.value;
+        populateList(filter);
+        matriculaList.style.display = 'block';
+      });
+
+      matriculaList.addEventListener('click', (event) => {
+        if (event.target.tagName === 'LI') {
+          const selectedValue = event.target.textContent;
+          handleSelection(selectedValue);
+        }
+      });
+      
+      document.addEventListener('click', (event) => {
+        const isClickInside = meuDiv.contains(event.target) || event.target === addColaboradorBtn || event.target === removeColaboradorBtn;
+        if (!isClickInside) {
+          matriculaList.style.display = 'none';
+        }
+      });
+
+      addColaboradorBtn.addEventListener('click', () => {
+        const nextIndex = matriculasAdicionadas.length + 1;
+        const newEntryDiv = document.createElement('div');
+        newEntryDiv.id = `matricula-entry-${nextIndex}`;
+        newEntryDiv.classList.add('matricula-entry');
+        
+        const newMatriculaSpan = document.createElement('span');
+        newMatriculaSpan.id = `matricula${nextIndex}`;
+        
+        newEntryDiv.appendChild(newMatriculaSpan);
+        newEntryDiv.appendChild(meuDiv);
+        
+        matriculaContainer.appendChild(newEntryDiv);
+        
+        meuDiv.style.display = 'block';
+        matriculaInput.value = '';
+        matriculaInput.focus();
+
+        lastSelectedMatriculaElement = newMatriculaSpan;
+        checkButtonsState();
+      });
+
+      removeColaboradorBtn.addEventListener('click', () => {
+        if (matriculasAdicionadas.length > 1) {
+          const lastEntry = matriculaContainer.lastElementChild;
+          matriculasAdicionadas.pop();
+          updateColaboradoresDisplay();
+          
+          matriculaContainer.removeChild(lastEntry);
+          const newLastEntry = matriculaContainer.lastElementChild;
+          newLastEntry.appendChild(meuDiv);
+          lastSelectedMatriculaElement = newLastEntry.querySelector('span');
+          meuDiv.style.display = 'block';
+          matriculaInput.value = '';
+          matriculaInput.focus();
+        } else if (matriculasAdicionadas.length === 1) {
+          matriculasAdicionadas.pop();
+          updateColaboradoresDisplay();
+          document.getElementById('matricula1').textContent = '';
+          lastSelectedMatriculaElement = document.getElementById('matricula1');
+          meuDiv.style.display = 'block';
+          matriculaInput.value = '';
+          matriculaInput.focus();
+          checkButtonsState();
+        }
+      });
+
+      // Dados para o campo de Inventário SAP
+      const inventarios = s3.split('|');
+      const maquinas = s4.split('|');
+      const inventarioInput = document.getElementById('inventarioInput');
+      const inventarioList = document.getElementById('inventarioList');
+      const equipamentoDiv = document.getElementById('meuDiv1');
+
+      function populateInventarioList(filter = '') {
+        inventarioList.innerHTML = '';
+        const filteredInventarios = inventarios.filter(id => id.includes(filter));
+        filteredInventarios.forEach(id => {
+          const li = document.createElement('li');
+          li.textContent = id;
+          li.setAttribute('data-index', inventarios.indexOf(id));
+          inventarioList.appendChild(li);
+        });
+      }
+      function handleInventarioSelection(value) {
+        const index = inventarios.indexOf(value);
+        if (index !== -1) {
+          inventarioInput.value = value;
+          equipamentoDiv.textContent = maquinas[index];
+        } else {
+          equipamentoDiv.textContent = '';
+        }
+        inventarioList.style.display = 'none';
+      }
+      inventarioInput.addEventListener('click', () => {
+        inventarioInput.value = '';
+        populateInventarioList();
+        inventarioList.style.display = 'block';
+      });
+      inventarioInput.addEventListener('input', (event) => {
+        const filter = event.target.value;
+        populateInventarioList(filter);
+        inventarioList.style.display = 'block';
+      });
+      inventarioList.addEventListener('click', (event) => {
+        if (event.target.tagName === 'LI') {
+          const selectedValue = event.target.textContent;
+          handleInventarioSelection(selectedValue);
+        }
+      });
+      document.addEventListener('click', (event) => {
+        const isClickInside = document.getElementById('meuDiv2').contains(event.target);
+        if (!isClickInside) {
+          inventarioList.style.display = 'none';
+        }
+      });
+      populateInventarioList();
+    })();
+  </script>
+  <!-- ===== Seleção automática de causas por M (Ishikawa) ===== -->
+  <script>
+    (function () {
+      // Causas possíveis de cada M (extraídas do documento fornecido)
+      const CAUSES = {
+        maquina: [
+          'Falha mecânica','Falha elétrica','Falha eletrônica','Falha hidráulica','Falha pneumática',
+          'Servoacionamento com falha','Motor superaquecido','Inversor em alarme','Encoder defeituoso',
+          'Sensor desajustado','Atuador defeituoso','CLP com falha','HMI sem comunicação',
+          'Rolamentos desgastados','Guias lineares desgastadas','Fusos com folga','Correias desgastadas',
+          'Acoplamentos desalinhados','Lubrificação insuficiente','Vazamentos de óleo ou ar',
+          'Sistema de refrigeração ineficiente','Forno fora de temperatura','Prensa desalinhada',
+          'Máquina de medição descalibrada'
+        ],
+        metodo: [
+          'Preventiva atrasada','Plano de manutenção inadequado','Procedimento não seguido','Setup incorreto',
+          'Ajustes inadequados','Checklist incompleto','Lubrificação fora da periodicidade','Torque incorreto',
+          'Alinhamento inadequado','Falta de inspeção','PM incompleta','PCM ineficiente',
+          'Ausência de análise de falhas','LOTO não executado','Start-up inadequado','Parâmetros incorretos',
+          'Backup de programas desatualizado'
+        ],
+        medicao: [
+          'Instrumento descalibrado','Sensor sem calibração','Máquina de medição fora da especificação',
+          'Erro de inspeção','Diagnóstico incorreto','Vibração não monitorada','Termografia não realizada',
+          'Análise de óleo inexistente','Alarme mal configurado','Dados inconsistentes',
+          'Frequência de inspeção inadequada','Falha na coleta de dados','Erro na interpretação dos resultados',
+          'Ausência de indicadores (MTBF, MTTR, OEE)'
+        ],
+        material: [
+          'Peça fora da especificação','Componente incompatível','Rolamento inadequado','Lubrificante incorreto',
+          'Graxa inadequada','Óleo contaminado','Filtro saturado','Vedação danificada','Ferramenta desgastada',
+          'Inserto quebrado','Matriz desgastada','Molde danificado','Matéria-prima contaminada',
+          'Baixa qualidade do fornecedor','Falta de peças sobressalentes','Estoque inadequado'
+        ],
+        mao_obra: [
+          'Falta de treinamento','Erro operacional','Erro de montagem','Erro de diagnóstico',
+          'Falha na programação CNC','Programação incorreta do CLP','Comunicação entre turnos','Baixa experiência',
+          'Falta de atenção','Procedimento não seguido','Equipe reduzida','Supervisão insuficiente',
+          'Falta de conhecimento técnico','Intervenção inadequada','Tempo insuficiente para execução'
+        ],
+        meio_ambiente: [
+          'Temperatura elevada','Umidade excessiva','Poeira','Contaminação por cavacos','Contaminação por óleo',
+          'Vibração externa','Oscilação de energia','Queda de tensão','Ar comprimido contaminado',
+          'Pressão de ar insuficiente','Água de refrigeração inadequada','Iluminação insuficiente',
+          'Espaço reduzido','Ambiente corrosivo','Ventilação inadequada','Limpeza deficiente'
+        ]
+      };
+
+      // Breve descrição do significado de cada M (aparece na caixa vazia)
+      const DESCRIPTIONS = {
+        maquina: 'Condição física e funcional do equipamento',
+        metodo: 'Como a manutenção ou operação foi realizada',
+        medicao: 'Como a condição do equipamento foi verificada',
+        material: 'Peças, componentes e insumos utilizados',
+        mao_obra: 'Competência e execução da equipe',
+        meio_ambiente: 'Fatores externos que influenciam o equipamento'
+      };
+
+      function escapeHtml(s) {
+        return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+      function stripDash(s) {
+        return s.replace(/^\s*[-•]\s*/, '').trim();
+      }
+      function placeholderFor(m) {
+        return '<span class="m-placeholder">' + escapeHtml(DESCRIPTIONS[m] || '') + '</span>';
+      }
+
+      // Lê as linhas atuais da caixa (ignora o texto de descrição/placeholder)
+      function getLines(box) {
+        const clone = box.cloneNode(true);
+        clone.querySelectorAll('.m-placeholder').forEach(el => el.remove());
+        let html = clone.innerHTML
+          .replace(/<div>/gi, '\n')
+          .replace(/<\/div>/gi, '')
+          .replace(/<br\s*\/?>/gi, '\n');
+        const tmp = document.createElement('div');
+        tmp.innerHTML = html;
+        return tmp.textContent
+          .split('\n')
+          .map(l => stripDash(l))
+          .filter(l => l.length > 0);
+      }
+
+      // Reescreve a caixa a partir de uma lista de itens
+      function setLines(box, lines, placeholderHtml) {
+        if (!lines.length) {
+          box.innerHTML = placeholderHtml;
+        } else {
+          box.innerHTML = lines.map(l => '- ' + escapeHtml(l)).join('<br>');
+        }
+      }
+
+      function setup(m) {
+        const box = document.getElementById('box-' + m);
+        const trigger = document.querySelector('.m-trigger[data-m="' + m + '"]');
+        if (!box || !trigger) return;
+
+        const wrap = trigger.closest('.m-select');
+        const placeholderHtml = placeholderFor(m);
+
+        // Itens que já existem na caixa (arquivo salvo/reaberto) viram opções pré-marcadas
+        const existing = getLines(box);
+        const options = CAUSES[m].slice();
+        existing.forEach(it => {
+          if (!options.some(o => o.toLowerCase() === it.toLowerCase())) options.push(it);
+        });
+
+        // Monta o dropdown
+        const dd = document.createElement('div');
+        dd.className = 'm-dropdown m-ui';
+        dd.style.display = 'none';
+        dd.innerHTML =
+          '<input type="text" class="m-filter" placeholder="Filtrar causas...">' +
+          '<ul class="m-list"></ul>' +
+          '<div class="m-actions">' +
+            '<button type="button" class="m-clear">Limpar</button>' +
+            '<button type="button" class="m-close">Fechar</button>' +
+          '</div>' +
+          '<div class="m-custom">' +
+            '<input type="text" class="m-custom-input" placeholder="Outro (personalizado)">' +
+            '<button type="button" class="m-custom-add">Adicionar</button>' +
+          '</div>';
+        wrap.appendChild(dd);
+
+        const list = dd.querySelector('.m-list');
+        const filter = dd.querySelector('.m-filter');
+
+        function addOption(label, checked) {
+          const li = document.createElement('li');
+          const cb = document.createElement('input');
+          cb.type = 'checkbox';
+          cb.checked = !!checked;
+          const span = document.createElement('span');
+          span.textContent = label;
+          li.appendChild(cb);
+          li.appendChild(span);
+          list.appendChild(li);
+
+          function toggle() {
+            const lines = getLines(box);
+            const idx = lines.findIndex(l => l.toLowerCase() === label.toLowerCase());
+            if (cb.checked) {
+              if (idx === -1) lines.push(label);
+            } else {
+              if (idx !== -1) lines.splice(idx, 1);
+            }
+            setLines(box, lines, placeholderHtml);
+          }
+          cb.addEventListener('change', toggle);
+          // clicar na linha também alterna o checkbox
+          li.addEventListener('click', function (e) {
+            if (e.target !== cb) { cb.checked = !cb.checked; toggle(); }
+          });
+          return { li, cb, label };
+        }
+
+        const rows = options.map(opt =>
+          addOption(opt, existing.some(e => e.toLowerCase() === opt.toLowerCase()))
+        );
+
+        // Normaliza o conteúdo inicial da caixa (mostra placeholder se vazio)
+        setLines(box, existing, placeholderHtml);
+
+        // Filtro de busca
+        filter.addEventListener('input', function () {
+          const q = filter.value.trim().toLowerCase();
+          rows.forEach(r => {
+            r.li.classList.toggle('m-hidden', q && !r.label.toLowerCase().includes(q));
+          });
+        });
+
+        // Adicionar item personalizado
+        const customInput = dd.querySelector('.m-custom-input');
+        const customAdd = dd.querySelector('.m-custom-add');
+        function addCustom() {
+          const val = customInput.value.trim();
+          if (!val) return;
+          if (rows.some(r => r.label.toLowerCase() === val.toLowerCase())) {
+            const r = rows.find(r => r.label.toLowerCase() === val.toLowerCase());
+            if (!r.cb.checked) { r.cb.checked = true; r.cb.dispatchEvent(new Event('change')); }
+          } else {
+            const r = addOption(val, true);
+            rows.push(r);
+            const lines = getLines(box);
+            if (!lines.some(l => l.toLowerCase() === val.toLowerCase())) {
+              lines.push(val);
+              setLines(box, lines, placeholderHtml);
+            }
+          }
+          customInput.value = '';
+          filter.dispatchEvent(new Event('input'));
+        }
+        customAdd.addEventListener('click', addCustom);
+        customInput.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter') { e.preventDefault(); addCustom(); }
+        });
+
+        // Limpar / Fechar
+        dd.querySelector('.m-clear').addEventListener('click', function () {
+          rows.forEach(r => r.cb.checked = false);
+          setLines(box, [], placeholderHtml);
+        });
+        dd.querySelector('.m-close').addEventListener('click', function () {
+          dd.style.display = 'none';
+        });
+
+        // Abre/fecha o dropdown; sincroniza checkboxes com o conteúdo atual da caixa
+        trigger.addEventListener('click', function (e) {
+          e.stopPropagation();
+          const isOpen = dd.style.display === 'block';
+          document.querySelectorAll('.m-dropdown').forEach(d => d.style.display = 'none');
+          if (!isOpen) {
+            const lines = getLines(box).map(l => l.toLowerCase());
+            rows.forEach(r => r.cb.checked = lines.includes(r.label.toLowerCase()));
+            dd.style.display = 'block';
+            filter.value = '';
+            filter.dispatchEvent(new Event('input'));
+            filter.focus();
+          }
+        });
+
+        // Evita fechar ao clicar dentro do dropdown
+        dd.addEventListener('click', function (e) { e.stopPropagation(); });
+      }
+
+      Object.keys(CAUSES).forEach(setup);
+
+      // Fecha qualquer dropdown ao clicar fora
+      document.addEventListener('click', function () {
+        document.querySelectorAll('.m-dropdown').forEach(dd => dd.style.display = 'none');
+      });
+    })();
+  </script>
+  <!-- ===== Salvar histórico, sincronizar com a nuvem e gerar planilha de diagnóstico ===== -->
+  <script>
+    const STORAGE_KEY = 'ishikawa_diagnosticos_v1';
+    const M_LABEL = {
+      maquina: 'Máquina',
+      metodo: 'Método',
+      material: 'Material',
+      medicao: 'Medição',
+      mao_obra: 'Mão de Obra',
+      meio_ambiente: 'Meio Ambiente'
+    };
+
+    // ===================================================================
+    // CONFIGURAÇÃO DA NUVEM (Google Sheets central)
+    // Preencha depois de implantar o Google Apps Script (veja o arquivo
+    // GoogleAppsScript_Code.gs). Deixe WEBAPP_URL vazio para desativar
+    // a sincronização em nuvem e usar só o histórico local + Excel.
+    // ===================================================================
+    const CONFIG = {
+      WEBAPP_URL: '', // ex: 'https://script.google.com/macros/s/AKfycb.../exec'
+      TOKEN: 'TROQUE_ESTA_SENHA_123' // deve ser IDÊNTICA à TOKEN_SECRET do Apps Script
+    };
+
+    function getRegistros() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+      catch (e) { return []; }
+    }
+    function setRegistros(arr) {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); }
+      catch (e) { alert('Não foi possível gravar no armazenamento local: ' + e.message); }
+    }
+    function atualizarContador() {
+      const regs = getRegistros();
+      const el = document.getElementById('recCount');
+      if (el) el.textContent = regs.length;
+      atualizarStatusSync(regs);
+    }
+    function atualizarStatusSync(regs) {
+      const el = document.getElementById('syncStatus');
+      const btn = document.getElementById('syncNowBtn');
+      if (!el) return;
+      if (!CONFIG.WEBAPP_URL) {
+        el.textContent = '☁️ Sincronização em nuvem não configurada (histórico só local)';
+        el.className = 'off';
+        if (btn) btn.style.display = 'none';
+        return;
+      }
+      const pendentes = regs.filter(r => !r.synced).length;
+      if (btn) btn.style.display = 'inline';
+      if (pendentes === 0) {
+        el.textContent = '☁️ Tudo sincronizado';
+        el.className = 'ok';
+      } else {
+        el.textContent = '☁️ ' + pendentes + ' pendente(s) de sincronização';
+        el.className = 'pending';
+      }
+    }
+
+    // Lê as causas selecionadas de um M (ignora o texto de descrição)
+    function lerCausas(m) {
+      const box = document.getElementById('box-' + m);
+      if (!box) return [];
+      const clone = box.cloneNode(true);
+      clone.querySelectorAll('.m-placeholder').forEach(el => el.remove());
+      let html = clone.innerHTML
+        .replace(/<div>/gi, '\n')
+        .replace(/<\/div>/gi, '')
+        .replace(/<br\s*\/?>/gi, '\n');
+      const tmp = document.createElement('div');
+      tmp.innerHTML = html;
+      return tmp.textContent
+        .split('\n')
+        .map(l => l.replace(/^\s*[-•]\s*/, '').trim())
+        .filter(l => l.length > 0);
+    }
+
+    // Monta o registro atual a partir da ficha
+    function coletarRegistro() {
+      const txt = id => (document.getElementById(id)?.textContent || '').trim();
+      const now = new Date();
+      const hora = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+      const dataAtual = txt('data-atual') ||
+        (String(now.getDate()).padStart(2, '0') + '/' + String(now.getMonth() + 1).padStart(2, '0') + '/' + now.getFullYear());
+      const rec = {
+        id: Date.now() + '-' + Math.random().toString(36).slice(2, 7),
+        dataISO: now.toISOString(),
+        data: dataAtual,
+        hora: hora,
+        equipamento: txt('meuDiv1'),
+        inventario: (document.getElementById('inventarioInput')?.value || '').trim(),
+        ordemPM: txt('meuDiv3'),
+        colaboradores: (document.getElementById('colaboradoresDisplay')?.textContent || '').replace(/\s*\/\s*$/, '').trim(),
+        caso: (document.querySelector('.case-title')?.textContent || '').trim(),
+        causas: {},
+        synced: false
+      };
+      Object.keys(M_LABEL).forEach(m => rec.causas[m] = lerCausas(m));
+      return rec;
+    }
+
+    // Envia UM registro para o Google Sheets central. Retorna Promise<boolean>.
+    function enviarParaNuvem(rec) {
+      if (!CONFIG.WEBAPP_URL) return Promise.resolve(false);
+      const payload = Object.assign({ token: CONFIG.TOKEN }, rec);
+      return fetch(CONFIG.WEBAPP_URL, {
+        method: 'POST',
+        mode: 'no-cors', // evita bloqueio de CORS; não permite ler a resposta, então assumimos sucesso se não der erro de rede
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      }).then(() => true).catch(() => false);
+    }
+
+    // Tenta sincronizar todos os registros ainda não confirmados
+    function sincronizarPendentes(silencioso) {
+      if (!CONFIG.WEBAPP_URL) {
+        if (!silencioso) alert('A sincronização em nuvem ainda não foi configurada neste site.\n(preencha CONFIG.WEBAPP_URL no código)');
+        return;
+      }
+      const regs = getRegistros();
+      const pendentes = regs.filter(r => !r.synced);
+      if (!pendentes.length) {
+        if (!silencioso) alert('Não há registros pendentes. Tudo sincronizado ☁️');
+        return;
+      }
+      let concluidos = 0;
+      const total = pendentes.length;
+      pendentes.reduce((chain, rec) => {
+        return chain.then(() => enviarParaNuvem(rec)).then(ok => {
+          if (ok) { rec.synced = true; concluidos++; }
+        });
+      }, Promise.resolve()).then(() => {
+        setRegistros(regs);
+        atualizarContador();
+        if (!silencioso) {
+          alert(concluidos === total
+            ? 'Sincronização concluída! ' + concluidos + ' registro(s) enviado(s) para a planilha central.'
+            : concluidos + ' de ' + total + ' registro(s) sincronizados. Os demais ficarão pendentes (verifique a internet) e serão reenviados na próxima tentativa.');
+        }
+      });
+    }
+
+    // Transforma todos os registros em linhas "formato longo" (1 linha por causa)
+    function montarLinhas(regs) {
+      const rows = [];
+      regs.forEach(r => {
+        Object.keys(M_LABEL).forEach(m => {
+          (r.causas[m] || []).forEach(c => {
+            rows.push({
+              'Data': r.data || '',
+              'Hora': r.hora || '',
+              'Equipamento': r.equipamento || '',
+              'Inventário SAP': r.inventario || '',
+              'Ordem PM': r.ordemPM || '',
+              'Colaboradores': r.colaboradores || '',
+              'Caso/Defeito': r.caso || '',
+              'M (Categoria)': M_LABEL[m],
+              'Causa': c,
+              'Sincronizado': r.synced ? 'Sim' : 'Não'
+            });
+          });
+        });
+      });
+      return rows;
+    }
+
+    // Agrupa e conta ocorrências por um conjunto de chaves
+    function resumoPor(rows, chaves) {
+      const map = new Map();
+      rows.forEach(r => {
+        const k = chaves.map(c => (r[c] || '(vazio)')).join(' ||| ');
+        map.set(k, (map.get(k) || 0) + 1);
+      });
+      const out = [];
+      map.forEach((qtd, k) => {
+        const partes = k.split(' ||| ');
+        const obj = {};
+        chaves.forEach((c, i) => obj[c] = partes[i]);
+        obj['Ocorrências'] = qtd;
+        out.push(obj);
+      });
+      out.sort((a, b) => b['Ocorrências'] - a['Ocorrências']);
+      return out;
+    }
+
+    function baixarBlob(blob, nome) {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = nome;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    // Fallback CSV quando a biblioteca Excel não estiver disponível (offline)
+    function exportarCSV(rows) {
+      const headers = Object.keys(rows[0]);
+      const esc = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+      const linhas = [headers.join(';')].concat(rows.map(r => headers.map(h => esc(r[h])).join(';')));
+      const csv = '\ufeff' + linhas.join('\r\n');
+      baixarBlob(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), 'Diagnosticos_Ishikawa.csv');
+      alert('Biblioteca Excel indisponível (provavelmente offline).\nExportado em CSV (uma única aba). Reabra a página online para gerar o Excel com as abas de resumo.');
+    }
+
+    // Gera e baixa a planilha com TODO o histórico local deste dispositivo
+    function gerarPlanilha() {
+      const regs = getRegistros();
+      if (!regs.length) { alert('Não há registros salvos para exportar.'); return; }
+      const rows = montarLinhas(regs);
+      if (!rows.length) { alert('Os registros salvos não possuem causas selecionadas.'); return; }
+
+      if (window.XLSX && XLSX.utils) {
+        const wb = XLSX.utils.book_new();
+
+        const wsReg = XLSX.utils.json_to_sheet(rows);
+        wsReg['!cols'] = [
+          { wch: 11 }, { wch: 6 }, { wch: 36 }, { wch: 14 }, { wch: 12 },
+          { wch: 26 }, { wch: 28 }, { wch: 14 }, { wch: 36 }, { wch: 13 }
+        ];
+        XLSX.utils.book_append_sheet(wb, wsReg, 'Registros');
+
+        const rCausas = resumoPor(rows, ['Causa', 'M (Categoria)']);
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rCausas), 'Resumo_Causas');
+
+        const rEquip = resumoPor(rows, ['Equipamento', 'Causa', 'M (Categoria)']);
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rEquip), 'Resumo_Equipamento');
+
+        const rCaso = resumoPor(rows, ['Caso/Defeito', 'Causa', 'M (Categoria)']);
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rCaso), 'Resumo_Defeito');
+
+        XLSX.writeFile(wb, 'Diagnosticos_Ishikawa.xlsx');
+      } else {
+        exportarCSV(rows);
+      }
+    }
+
+    // Botão principal: salva local + envia para a nuvem (se configurada) + baixa a planilha atualizada
+    function salvarEmPlanilha() {
+      const rec = coletarRegistro();
+      const totalCausas = Object.values(rec.causas).reduce((s, a) => s + a.length, 0);
+      if (totalCausas === 0) {
+        alert('Selecione ao menos uma causa em algum dos M antes de salvar.');
+        return;
+      }
+      const regs = getRegistros();
+      regs.push(rec);
+      setRegistros(regs);
+      atualizarContador();
+      gerarPlanilha();
+
+      if (CONFIG.WEBAPP_URL) {
+        enviarParaNuvem(rec).then(ok => {
+          if (ok) {
+            rec.synced = true;
+            const atuais = getRegistros();
+            const idx = atuais.findIndex(r => r.id === rec.id);
+            if (idx !== -1) atuais[idx].synced = true;
+            setRegistros(atuais);
+          }
+          atualizarContador();
+          alert('Registro salvo! Total no histórico deste dispositivo: ' + regs.length + '.\n' +
+            (ok ? 'Enviado à planilha central ☁️.' : 'Não foi possível enviar à planilha central agora (verifique a internet). Ficará pendente — use "Sincronizar pendências" depois.') +
+            '\nA planilha local (Excel) foi baixada.');
+        });
+      } else {
+        alert('Registro salvo! Total no histórico deste dispositivo: ' + regs.length + '.\nA planilha local (Excel) foi baixada.\n(Sincronização em nuvem não configurada.)');
+      }
+    }
+
+    // Exporta o histórico local sem adicionar um novo registro
+    function exportarPlanilha() {
+      gerarPlanilha();
+    }
+
+    // Apaga o histórico local (com confirmação) — não afeta a planilha central já sincronizada
+    function limparHistorico() {
+      const regs = getRegistros();
+      if (!regs.length) { alert('O histórico já está vazio.'); return; }
+      const pendentes = regs.filter(r => !r.synced).length;
+      let aviso = 'Apagar os ' + regs.length + ' registro(s) salvos neste dispositivo?\nEsta ação não pode ser desfeita.';
+      if (pendentes > 0) aviso += '\n\n⚠️ ' + pendentes + ' registro(s) ainda NÃO foram sincronizados com a planilha central e serão perdidos.';
+      aviso += '\n\nDica: exporte a planilha antes para não perder os dados.';
+      const ok = confirm(aviso);
+      if (ok) {
+        localStorage.removeItem(STORAGE_KEY);
+        atualizarContador();
+        alert('Histórico apagado.');
+      }
+    }
+
+    atualizarContador();
+    // Ao carregar a página, tenta sincronizar silenciosamente pendências de sessões anteriores
+    if (CONFIG.WEBAPP_URL) sincronizarPendentes(true);
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
