@@ -60,6 +60,18 @@
       font-weight: 700;
       background: linear-gradient(#eee, #bbb);
     }
+    .case-title .defeito-placeholder {
+      font-size: 13px;
+      font-style: italic;
+      font-weight: 400;
+      color: #555;
+      text-transform: none;
+    }
+    #saveDataButton:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background-color: #999 !important;
+    }
     /* collaborator and right info */
     .row {
       display: flex;
@@ -358,7 +370,8 @@
     }
     /* Durante captura/salvamento, esconder controles de seleção */
     body.capturing .m-ui,
-    body.capturing .m-placeholder {
+    body.capturing .m-placeholder,
+    body.capturing #camposFaltandoMsg {
       display: none !important;
     }
     /* Botão salvar + barra de status do histórico */
@@ -368,6 +381,19 @@
       font-weight: 600;
     }
     #saveDataButton:hover { background-color: #256628 !important; }
+    .campo-faltando {
+      border: 2px solid #d32f2f !important;
+      box-shadow: 0 0 0 2px rgba(211, 47, 47, 0.15);
+      border-radius: 3px;
+    }
+    #camposFaltandoMsg {
+      color: #d32f2f;
+      font-size: 13px;
+      font-weight: 600;
+      margin-top: 6px;
+      text-align: center;
+      display: none;
+    }
     .save-toolbar {
       display: flex;
       align-items: center;
@@ -450,7 +476,26 @@
         </table>
       </div>
     </div>
-    <div class="case-title" contenteditable="true" spellcheck="false" style="text-transform: uppercase;"></div>
+    <div class="case-title" id="caseTitleBox" contenteditable="true" spellcheck="false" style="text-transform: uppercase;"><span class="defeito-placeholder" style="text-transform:none;">Insira o defeito</span></div>
+    <script>
+      (function () {
+        const box = document.getElementById('caseTitleBox');
+        const placeholderHtml = '<span class="defeito-placeholder" style="text-transform:none;">Insira o defeito</span>';
+        function isPlaceholder() {
+          return box.querySelector('.defeito-placeholder') !== null;
+        }
+        box.addEventListener('focus', function () {
+          if (isPlaceholder()) box.innerHTML = '';
+        });
+        box.addEventListener('blur', function () {
+          if (box.textContent.trim() === '') box.innerHTML = placeholderHtml;
+          if (typeof atualizarEstadoBotaoSalvar === 'function') atualizarEstadoBotaoSalvar();
+        });
+        box.addEventListener('input', function () {
+          if (typeof atualizarEstadoBotaoSalvar === 'function') atualizarEstadoBotaoSalvar();
+        });
+      })();
+    </script>
     <div class="row">
       <div class="left" style="margin-left: 12px">
         <div style="padding:4px; background:linear-gradient(#c9c9c9,#ccc);">
@@ -618,13 +663,7 @@
           <button id="nextShiftButton" onclick="handleButtonClick()" style="background-color: #4ca3e1bd;">Próximo Turno</button>
           <button id="saveDataButton" onclick="salvarEmPlanilha()">💾 Salvar em Planilha</button>
         </div>
-        <div class="save-toolbar m-ui">
-          <span><span id="recCount">0</span> registro(s) no histórico deste dispositivo</span>
-          <span id="syncStatus">•</span>
-          <button type="button" class="link-btn" id="syncNowBtn" onclick="sincronizarPendentes()">🔄 Sincronizar pendências</button>
-          <button type="button" class="link-btn" onclick="exportarPlanilha(false)">Exportar sem salvar</button>
-          <button type="button" class="link-btn danger" onclick="limparHistorico()">Limpar histórico</button>
-        </div>
+        <div id="camposFaltandoMsg"></div>
       </div>
     </div>
   </div>
@@ -920,6 +959,89 @@
         }
       });
       populateInventarioList();
+    })();
+  </script>
+  <!-- ===== Validação de campos obrigatórios (destaca em vermelho o que falta) ===== -->
+  <script>
+    // Cada item: nome exibido, elemento a destacar em vermelho, função que diz se está preenchido
+    function listaCamposObrigatorios() {
+      const diagBox = document.getElementById('diagBox');
+      const caseBox = document.getElementById('caseTitleBox');
+      const matriculaContainer = document.getElementById('matriculaContainer');
+      return [
+        {
+          nome: 'Chapa',
+          el: matriculaContainer,
+          ok: () => (document.getElementById('colaboradoresDisplay')?.textContent || '').trim() !== ''
+        },
+        {
+          nome: 'Equipamento',
+          el: document.getElementById('meuDiv1'),
+          ok: () => (document.getElementById('meuDiv1')?.textContent || '').trim() !== ''
+        },
+        {
+          nome: 'Inventário SAP',
+          el: document.getElementById('inventarioInput'),
+          ok: () => (document.getElementById('inventarioInput')?.value || '').trim() !== ''
+        },
+        {
+          nome: 'Ordem PM',
+          el: document.getElementById('meuDiv3'),
+          ok: () => (document.getElementById('meuDiv3')?.textContent || '').trim() !== ''
+        },
+        {
+          nome: 'Defeito',
+          el: caseBox,
+          ok: () => !!caseBox && !caseBox.querySelector('.defeito-placeholder') && caseBox.textContent.trim() !== ''
+        },
+        {
+          nome: 'Causa Raiz',
+          el: diagBox,
+          ok: () => !!diagBox && !diagBox.querySelector('.diag-placeholder') && diagBox.textContent.trim() !== ''
+        }
+      ];
+    }
+
+    function camposObrigatoriosPreenchidos() {
+      return listaCamposObrigatorios().every(c => c.ok());
+    }
+
+    // Destaca em vermelho os campos vazios e mostra a mensagem do que falta.
+    // Retorna a lista de nomes dos campos que ainda faltam.
+    function atualizarEstadoBotaoSalvar() {
+      const campos = listaCamposObrigatorios();
+      const faltando = [];
+      campos.forEach(c => {
+        const preenchido = c.ok();
+        if (!preenchido) faltando.push(c.nome);
+        if (c.el) c.el.classList.toggle('campo-faltando', !preenchido);
+      });
+
+      const msg = document.getElementById('camposFaltandoMsg');
+      if (msg) {
+        if (faltando.length) {
+          msg.textContent = '⚠️ Faltam preencher: ' + faltando.join(', ');
+          msg.style.display = 'block';
+        } else {
+          msg.textContent = '';
+          msg.style.display = 'none';
+        }
+      }
+      return faltando;
+    }
+
+    (function () {
+      ['meuDiv1', 'meuDiv3', 'inventarioInput'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('input', atualizarEstadoBotaoSalvar);
+        el.addEventListener('blur', atualizarEstadoBotaoSalvar);
+        el.addEventListener('keyup', atualizarEstadoBotaoSalvar);
+      });
+      // Cobre seleções feitas clicando nas listas (matrícula/inventário) e
+      // nos botões de adicionar/remover colaborador
+      document.addEventListener('click', atualizarEstadoBotaoSalvar);
+      atualizarEstadoBotaoSalvar();
     })();
   </script>
   <!-- ===== Seleção automática de causas por M (Ishikawa) ===== -->
@@ -1248,7 +1370,8 @@
         inventario: (document.getElementById('inventarioInput')?.value || '').trim(),
         ordemPM: txt('meuDiv3'),
         colaboradores: (document.getElementById('colaboradoresDisplay')?.textContent || '').replace(/\s*\/\s*$/, '').trim(),
-        caso: (document.querySelector('.case-title')?.textContent || '').trim(),
+        caso: (document.getElementById('caseTitleBox')?.querySelector('.defeito-placeholder')
+          ? '' : (document.getElementById('caseTitleBox')?.textContent || '').trim()),
         causaRaiz: (document.getElementById('diagBox')?.querySelector('.diag-placeholder')
           ? '' : (document.getElementById('diagBox')?.textContent || '').trim()),
         causas: {},
@@ -1399,6 +1522,14 @@
 
     // Botão principal: salva local + envia para a nuvem (se configurada) + baixa a planilha atualizada
     function salvarEmPlanilha() {
+      if (typeof atualizarEstadoBotaoSalvar === 'function') {
+        const faltando = atualizarEstadoBotaoSalvar();
+        if (faltando && faltando.length) {
+          alert('⚠️ Preencha os campos destacados em vermelho antes de salvar:\n' + faltando.join(', '));
+          return;
+        }
+      }
+
       const rec = coletarRegistro();
       const totalCausas = Object.values(rec.causas).reduce((s, a) => s + a.length, 0);
       if (totalCausas === 0) {
@@ -1410,6 +1541,9 @@
         alert('A sincronização em nuvem ainda não foi configurada neste site (CONFIG.WEBAPP_URL vazio).\nO registro não pode ser enviado agora.');
         return;
       }
+
+      const confirmar = confirm('Tem certeza que deseja salvar este registro?\nApós salvar, a página será reiniciada.');
+      if (!confirmar) return;
 
       const regs = getRegistros();
       regs.push(rec);
@@ -1430,8 +1564,9 @@
           location.reload();
         } else {
           atualizarContador();
-          if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '💾 Salvar em Planilha'; }
-          alert('⚠️ Não foi possível enviar agora (verifique a internet).\nO registro ficou salvo neste dispositivo como pendente — clique em "🔄 Sincronizar pendências" quando a conexão voltar.');
+          if (saveBtn) { saveBtn.textContent = '💾 Salvar em Planilha'; }
+          if (typeof atualizarEstadoBotaoSalvar === 'function') atualizarEstadoBotaoSalvar();
+          alert('⚠️ Não foi possível enviar agora (verifique a internet).\nO registro ficou salvo neste dispositivo como pendente — tente salvar novamente quando a conexão voltar.');
         }
       });
     }
