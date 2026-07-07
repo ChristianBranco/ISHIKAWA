@@ -116,6 +116,15 @@
       justify-content: center;
       font-size: 28px;
       font-weight: 600;
+      text-align: center;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+    .big-right .diag-placeholder {
+      font-size: 14px;
+      font-style: italic;
+      font-weight: 400;
+      color: #333;
     }
     .label {
       text-align: center;
@@ -588,7 +597,22 @@
             });
           </script>
         </div>
-        <div style="margin-top:10px" class="big-right" contenteditable="true">Software NC</div>
+        <div style="margin-top:10px" class="big-right" id="diagBox" contenteditable="true"><span class="diag-placeholder">Insira a causa raiz, o que realmente foi diagnosticado como defeito</span></div>
+        <script>
+          (function () {
+            const diagBox = document.getElementById('diagBox');
+            const placeholderHtml = '<span class="diag-placeholder">Insira a causa raiz, o que realmente foi diagnosticado como defeito</span>';
+            function isPlaceholder() {
+              return diagBox.querySelector('.diag-placeholder') !== null;
+            }
+            diagBox.addEventListener('focus', function () {
+              if (isPlaceholder()) diagBox.innerHTML = '';
+            });
+            diagBox.addEventListener('blur', function () {
+              if (diagBox.textContent.trim() === '') diagBox.innerHTML = placeholderHtml;
+            });
+          })();
+        </script>
         <div class="button-container">
           <button id="captureButton" onclick="captureImage()" style="background-color: #4ca3e1bd;">Capturar Imagem</button>
           <button id="nextShiftButton" onclick="handleButtonClick()" style="background-color: #4ca3e1bd;">Próximo Turno</button>
@@ -1151,9 +1175,9 @@
     // a sincronização em nuvem e usar só o histórico local + Excel.
     // ===================================================================
     const CONFIG = {
-      WEBAPP_URL: '', // ex: 'https://script.google.com/macros/s/AKfycb.../exec'
-      TOKEN: 'TROQUE_ESTA_SENHA_123' // deve ser IDÊNTICA à TOKEN_SECRET do Apps Script
-    };
+  	WEBAPP_URL:'https://script.google.com/macros/s/AKfycbyO92gCtx1qHocZueXrH7rK2k2l2kDdr6MerVYQkGWo-4ELNCCZKUWX82kIurtNlfrceA/exec',
+  	TOKEN: '123' // deve ser IDÊNTICA à TOKEN_SECRET do Apps Script
+};	
 
     function getRegistros() {
       try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
@@ -1225,6 +1249,8 @@
         ordemPM: txt('meuDiv3'),
         colaboradores: (document.getElementById('colaboradoresDisplay')?.textContent || '').replace(/\s*\/\s*$/, '').trim(),
         caso: (document.querySelector('.case-title')?.textContent || '').trim(),
+        causaRaiz: (document.getElementById('diagBox')?.querySelector('.diag-placeholder')
+          ? '' : (document.getElementById('diagBox')?.textContent || '').trim()),
         causas: {},
         synced: false
       };
@@ -1287,6 +1313,7 @@
               'Ordem PM': r.ordemPM || '',
               'Colaboradores': r.colaboradores || '',
               'Caso/Defeito': r.caso || '',
+              'Causa Raiz (Diagnóstico Final)': r.causaRaiz || '',
               'M (Categoria)': M_LABEL[m],
               'Causa': c,
               'Sincronizado': r.synced ? 'Sim' : 'Não'
@@ -1348,7 +1375,7 @@
         const wsReg = XLSX.utils.json_to_sheet(rows);
         wsReg['!cols'] = [
           { wch: 11 }, { wch: 6 }, { wch: 36 }, { wch: 14 }, { wch: 12 },
-          { wch: 26 }, { wch: 28 }, { wch: 14 }, { wch: 36 }, { wch: 13 }
+          { wch: 26 }, { wch: 28 }, { wch: 40 }, { wch: 14 }, { wch: 36 }, { wch: 13 }
         ];
         XLSX.utils.book_append_sheet(wb, wsReg, 'Registros');
 
@@ -1360,6 +1387,9 @@
 
         const rCaso = resumoPor(rows, ['Caso/Defeito', 'Causa', 'M (Categoria)']);
         XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rCaso), 'Resumo_Defeito');
+
+        const rRaiz = resumoPor(rows, ['Causa Raiz (Diagnóstico Final)', 'Causa', 'M (Categoria)']);
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rRaiz), 'Resumo_CausaRaiz');
 
         XLSX.writeFile(wb, 'Diagnosticos_Ishikawa.xlsx');
       } else {
