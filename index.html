@@ -1405,29 +1405,35 @@
         alert('Selecione ao menos uma causa em algum dos M antes de salvar.');
         return;
       }
+
+      if (!CONFIG.WEBAPP_URL) {
+        alert('A sincronização em nuvem ainda não foi configurada neste site (CONFIG.WEBAPP_URL vazio).\nO registro não pode ser enviado agora.');
+        return;
+      }
+
       const regs = getRegistros();
       regs.push(rec);
       setRegistros(regs);
       atualizarContador();
-      gerarPlanilha();
 
-      if (CONFIG.WEBAPP_URL) {
-        enviarParaNuvem(rec).then(ok => {
-          if (ok) {
-            rec.synced = true;
-            const atuais = getRegistros();
-            const idx = atuais.findIndex(r => r.id === rec.id);
-            if (idx !== -1) atuais[idx].synced = true;
-            setRegistros(atuais);
-          }
+      const saveBtn = document.getElementById('saveDataButton');
+      if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Enviando...'; }
+
+      enviarParaNuvem(rec).then(ok => {
+        if (ok) {
+          rec.synced = true;
+          const atuais = getRegistros();
+          const idx = atuais.findIndex(r => r.id === rec.id);
+          if (idx !== -1) atuais[idx].synced = true;
+          setRegistros(atuais);
+          alert('✅ Registro enviado com sucesso para a planilha central!');
+          location.reload();
+        } else {
           atualizarContador();
-          alert('Registro salvo! Total no histórico deste dispositivo: ' + regs.length + '.\n' +
-            (ok ? 'Enviado à planilha central ☁️.' : 'Não foi possível enviar à planilha central agora (verifique a internet). Ficará pendente — use "Sincronizar pendências" depois.') +
-            '\nA planilha local (Excel) foi baixada.');
-        });
-      } else {
-        alert('Registro salvo! Total no histórico deste dispositivo: ' + regs.length + '.\nA planilha local (Excel) foi baixada.\n(Sincronização em nuvem não configurada.)');
-      }
+          if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '💾 Salvar em Planilha'; }
+          alert('⚠️ Não foi possível enviar agora (verifique a internet).\nO registro ficou salvo neste dispositivo como pendente — clique em "🔄 Sincronizar pendências" quando a conexão voltar.');
+        }
+      });
     }
 
     // Exporta o histórico local sem adicionar um novo registro
